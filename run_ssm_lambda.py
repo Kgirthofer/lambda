@@ -16,9 +16,10 @@ import boto3
 def lambda_handler(event,context):
     logger.info('got event{}'.format(event))
     instanceId = event['detail']['instance-id']
-    instanceName = ec2.describe_instances(InstanceIds=[str(instanceId),])['Reservations'][0]['Instances'][0]['Tags'][0]
-    print ("Instance Name: " + instanceName.get('Value'))
+    instanceName = ec2.describe_instances(InstanceIds=[str(instanceId),])['Reservations'][0]['Instances'][0]['Tags']
+    instanceName = [y['Value'] for y in filter(lambda x: 'Name' in x.values(), instanceName)][0]
+    print ("Instance Name: " + instanceName)
     print("Instance ID: " + instanceId)
-    command = 'sh ##PUT_YOUR_COMMAND_HERE## ' + instanceName.get('Value')
+    command = 'sh ##PUT_YOUR_COMMAND_HERE## ' + instanceName
     print("Command: " + command)
     ssmresponse = ssm.send_command(InstanceIds=['##instanceID_to_run_command_on##'], DocumentName='AWS-RunShellScript', Parameters= { 'commands': [command] } ) 
